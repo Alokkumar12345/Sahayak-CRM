@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sahayak CRM - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="dynamic-bg"></div>
+
+  <header class="app-header">
+    <div class="logo">
+        <img src="/images/logo.png" alt="Sahayak Logo" class="logo-img"> <h1>Sahayak Admin</h1>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="admin-link">Customer Portal</a>
+      <button id="btnLogout" class="btn-logout hidden">Logout</button>
+    </div>
+  </header>
+
+  <main class="container glass-panel">
+    
+    <!-- Login Section -->
+    <div id="loginSection" class="admin-login-section">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="complaint-form">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="adminUsername" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="adminPassword" required>
+        </div>
+        <button type="submit" class="submit-btn" id="btnLogin">Login</button>
+      </form>
+      <div id="loginMessage" class="form-message"></div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="admin-dashboard-section hidden">
+      <h2>Complaints Dashboard</h2>
+      
+      <!-- Filters -->
+      <div class="filters-row">
+        <select id="filterShop">
+          <option value="">All Shops</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Amritsar">Amritsar</option>
+          <option value="Kolkata">Kolkata</option>
+          <option value="Chennai">Chennai</option>
+          <option value="Mumbai">Mumbai</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <button id="btnApplyFilters" class="btn-secondary">Apply Filters</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="complaints-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Shop</th>
+              <th>Product</th>
+              <th>Problem</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsTableBody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Admin Voice Chatbot Widget -->
+  <div class="chat-widget hidden" id="adminChatWidget">
+    <div class="chat-toggle" id="adminChatToggle">
+      <span class="chat-icon">📊</span>
+    </div>
+    
+    <div class="chat-window hidden" id="adminChatWindow">
+      <div class="chat-header">
+        <div class="chat-title">
+          <span class="avatar">📊🤖</span> <span id="adminChatBotName">Admin Assistant</span>
+        </div>
+        <button class="close-chat" id="adminCloseChat">×</button>
+      </div>
+      
+      <div class="chat-messages" id="adminChatMessages">
+        <div class="message bot">
+          <div class="msg-bubble">Welcome Admin. You can ask me queries like "Show all pending complaints from Shop 3" or use voice search!</div>
+        </div>
+        
+        <div class="typing-indicator hidden" id="adminTypingIndicator">
+          <div class="bubble">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <button type="button" class="chat-mic-btn" id="adminChatMicBtn">🎤</button>
+        <input type="text" id="adminChatInput" placeholder="Ask a query...">
+        <button class="chat-send" id="adminChatSend">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Remarks Modal -->
+  <div id="remarksModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>Resolve Complaint</h3>
+      <div class="form-group">
+        <label>Add Remarks (Optional)</label>
+        <textarea id="adminRemarksInput" rows="3" placeholder="Explain how the issue was resolved..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCancelResolve" class="btn-secondary" style="background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);">Cancel</button>
+        <button id="btnConfirmResolve" class="btn-secondary">Mark Resolved</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin.js"></script>
+  <script src="/js/adminChat.js"></script>
+</body>
+</html>

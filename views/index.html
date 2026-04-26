@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sahayak CRM - File a Complaint</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div class="dynamic-bg"></div>
+
+  <header class="app-header">
+    <div class="logo">
+      <img src="/images/logo.png" alt="Sahayak Logo" class="logo-img">
+      <h1 id="brandName">Sahayak CRM</h1>
+    </div>
+    <div class="language-selector">
+      <select id="langSelect">
+        <option value="english">English</option>
+        <option value="hindi">हिंदी (Hindi)</option>
+        <option value="punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="bengali">বাংলা (Bengali)</option>
+        <option value="tamil">தமிழ் (Tamil)</option>
+      </select>
+      <a href="/admin" class="admin-link" id="navAdmin">Admin</a>
+    </div>
+  </header>
+
+  <main class="container glass-panel">
+
+    <!-- Phone Login Section -->
+    <div id="phoneLoginSection" class="auth-section">
+      <div class="form-header">
+        <h2>Welcome to Sahayak</h2>
+        <p>Please enter your 10-digit phone number to track or file a complaint.</p>
+      </div>
+      <form id="phoneLoginForm" class="complaint-form">
+        <div class="form-group">
+          <label for="loginPhone" id="labelPhoneLogin">Phone Number</label>
+          <input type="tel" id="loginPhone" required placeholder="Enter your 10-digit number" pattern="[0-9]{10}">
+        </div>
+        <div id="otpSection" class="hidden">
+          <div class="form-group">
+            <label for="loginOtp">Enter OTP</label>
+            <input type="text" id="loginOtp" placeholder="Enter 6-digit OTP" pattern="[0-9]{6}">
+          </div>
+        </div>
+        <button type="button" class="submit-btn" id="btnGetOtp">Get OTP</button>
+        <button type="submit" class="submit-btn hidden" id="btnLoginPhone">Verify & Login</button>
+      </form>
+    </div>
+
+    <!-- User Dashboard Section -->
+    <div id="userDashboard" class="dashboard-section hidden">
+      <div class="dashboard-header flex-between">
+        <h2>My Complaints</h2>
+        <div>
+          <button id="btnNewComplaint" class="btn-secondary">+ New Complaint</button>
+          <button id="btnLogoutUser" class="btn-secondary"
+            style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); margin-left: 0.5rem;">Logout</button>
+        </div>
+      </div>
+      <div id="userComplaintsList" class="complaints-list">
+        <!-- Fetched dynamically -->
+      </div>
+    </div>
+
+    <!-- Complaint Form Section -->
+    <div id="complaintFormSection" class="hidden">
+      <div class="form-header">
+        <h2 id="formTitle">File a Service Complaint</h2>
+        <p id="formSubtitle">We are here to help you get your appliances running again.</p>
+      </div>
+
+      <!-- Voice Control Full Form Mode -->
+      <div class="full-voice-mode">
+        <!-- <button type="button" id="btnFullVoice" class="btn-voice-large pulse-animation">
+         <span class="mic-icon">🎤</span> <span id="fullVoiceText">Start Voice Assistant</span> 
+      </button> -->
+      </div>
+
+      <form id="complaintForm" class="complaint-form">
+        <div class="form-group">
+          <label for="name" id="labelName">Full Name</label>
+          <div class="input-with-mic">
+            <input type="text" id="name" name="name" required placeholder="Enter your full name">
+            <button type="button" class="mic-btn" data-target="name">🎤</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="display: none;">
+          <label for="phone" id="labelPhone">Phone Number</label>
+          <div class="input-with-mic">
+            <input type="tel" id="phone" name="phone" required placeholder="Enter your 10-digit number">
+            <button type="button" class="mic-btn" data-target="phone">🎤</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label for="shop" id="labelShop">Select Shop</label>
+            <select id="shop" name="shop" required>
+              <option value="Delhi">Shop 1: Delhi</option>
+              <option value="Amritsar">Shop 2: Amritsar</option>
+              <option value="Kolkata">Shop 3: Kolkata</option>
+              <option value="Chennai">Shop 4: Chennai</option>
+              <option value="Mumbai">Shop 5: Mumbai</option>
+            </select>
+          </div>
+          <div class="form-group half-width">
+            <label for="product" id="labelProduct">Product Selection</label>
+            <select id="product" name="product" required>
+              <option value="AC">AC</option>
+              <option value="Refrigerator">Refrigerator</option>
+              <option value="Washing Machine">Washing Machine</option>
+              <option value="Microwave">Microwave</option>
+              <option value="TV">TV</option>
+              <option value="Water Heater">Water Heater</option>
+              <option value="Fan">Fan</option>
+              <option value="Mixer/Grinder">Mixer/Grinder</option>
+              <option value="Induction Cooktop">Induction Cooktop</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="machineId" id="labelMachineId">Machine ID</label>
+          <div class="input-with-mic">
+            <input type="text" id="machineId" name="machineId" required placeholder="e.g. AC-2024-Delhi-0045">
+            <button type="button" class="mic-btn" data-target="machineId">🎤</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="problem" id="labelProblem">Problem Description</label>
+          <div class="input-with-mic">
+            <textarea id="problem" name="problem" rows="3" required
+              placeholder="Describe the issue you are facing..."></textarea>
+            <button type="button" class="mic-btn" data-target="problem">🎤</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="severity" id="labelSeverity">Severity</label>
+          <select id="severity" name="severity" required>
+            <option value="Low">Low - Working but has issues</option>
+            <option value="Medium">Medium - Partially functional</option>
+            <option value="High">High - Completely broken, needs urgent fix</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="address" id="labelAddress">Service Address</label>
+          <div class="input-with-mic">
+            <textarea id="address" name="address" rows="2" required
+              placeholder="Enter your full address for home service"></textarea>
+            <button type="button" class="mic-btn" data-target="address">🎤</button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btnSubmit">Submit Complaint</button>
+        <button type="button" class="btn-secondary" id="btnCancelComplaint"
+          style="margin-top: 1rem; width: 100%;">Cancel</button>
+      </form>
+
+      <div id="formMessage" class="form-message"></div>
+    </div>
+  </main>
+
+  <!-- Chatbot Widget -->
+  <div class="chat-widget" id="chatWidget">
+    <div class="chat-toggle" id="chatToggle">
+      <span class="chat-icon">🤖</span>
+    </div>
+
+    <div class="chat-window hidden" id="chatWindow">
+      <div class="chat-header">
+        <div class="chat-title">
+          <span class="avatar">🔧🤖</span> <span id="chatBotName">Sahayak (सहायक)</span>
+        </div>
+        <button class="close-chat" id="closeChat">×</button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+          <div class="msg-bubble">नमस्ते! आपकी शिकायत दर्ज करने में मैं आपकी मदद करूँगा। (Hi! I will help you file a
+            complaint.)</div>
+        </div>
+
+        <div class="typing-indicator hidden" id="typingIndicator">
+          <div class="bubble">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-quick-replies" id="chatQuickReplies">
+        <button class="chip" data-text="File a Complaint">File a Complaint</button>
+        <button class="chip" data-text="Check Status">Check Status</button>
+        <button class="chip" data-text="Shop Info">Shop Info</button>
+        <button class="chip" data-text="Talk to Human">Talk to Human</button>
+      </div>
+
+      <div class="chat-input-area">
+        <button type="button" class="chat-mic-btn" id="chatMicBtn">🎤</button>
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button class="chat-send" id="chatSend">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/translations.js"></script>
+  <script src="/js/voiceInput.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+
+</html>
