@@ -52,16 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLogout.addEventListener('click', () => {
       localStorage.removeItem('adminToken');
       currentToken = null;
-      loginSection.classList.remove('hidden');
-      dashboardSection.classList.add('hidden');
-      btnLogout.classList.add('hidden');
-      adminSidebar.classList.add('hidden');
-      adminChatWidget.classList.add('hidden');
       
-      // Reset sidebar to dashboard internally, but keep it hidden
-      contentSections.forEach(sec => sec.classList.add('hidden'));
-      sidebarLinks.forEach(l => l.classList.remove('active'));
-      document.querySelector('[data-target="dashboardSection"]').classList.add('active');
+      // Clear login form fields
+      if (loginForm) loginForm.reset();
+
+      // Redirect to the customer portal homepage upon logout
+      window.location.href = '/';
     });
   }
 
