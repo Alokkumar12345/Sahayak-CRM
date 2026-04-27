@@ -19,6 +19,25 @@ app.use(express.json());
 // We serve static assets (css, js) from the 'public' folder.
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serverless robust MongoDB connection
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return; // Already connected
+  }
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB Connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+  }
+};
+
+// Ensure database is connected before handling any API requests
+app.use('/api', async (req, res, next) => {
+  await connectDB();
+  next();
+});
+
 // --- ROUTES (Controller mapped logic) ---
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/chat', chatRoutes);
@@ -37,10 +56,6 @@ app.use((req, res) => {
 });
 
 // --- MODEL (MVC) Initialization ---
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
 
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
