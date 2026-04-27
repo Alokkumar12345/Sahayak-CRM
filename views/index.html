@@ -31,45 +31,8 @@
 
   <main class="container glass-panel">
 
-    <!-- Phone Login Section -->
-    <div id="phoneLoginSection" class="auth-section">
-      <div class="form-header">
-        <h2>Welcome to Sahayak</h2>
-        <p>Please enter your 10-digit phone number to track or file a complaint.</p>
-      </div>
-      <form id="phoneLoginForm" class="complaint-form">
-        <div class="form-group">
-          <label for="loginPhone" id="labelPhoneLogin">Phone Number</label>
-          <input type="tel" id="loginPhone" required placeholder="Enter your 10-digit number" pattern="[0-9]{10}">
-        </div>
-        <div id="otpSection" class="hidden">
-          <div class="form-group">
-            <label for="loginOtp">Enter OTP</label>
-            <input type="text" id="loginOtp" placeholder="Enter 6-digit OTP" pattern="[0-9]{6}">
-          </div>
-        </div>
-        <button type="button" class="submit-btn" id="btnGetOtp">Get OTP</button>
-        <button type="submit" class="submit-btn hidden" id="btnLoginPhone">Verify & Login</button>
-      </form>
-    </div>
-
-    <!-- User Dashboard Section -->
-    <div id="userDashboard" class="dashboard-section hidden">
-      <div class="dashboard-header flex-between">
-        <h2>My Complaints</h2>
-        <div>
-          <button id="btnNewComplaint" class="btn-secondary">+ New Complaint</button>
-          <button id="btnLogoutUser" class="btn-secondary"
-            style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); margin-left: 0.5rem;">Logout</button>
-        </div>
-      </div>
-      <div id="userComplaintsList" class="complaints-list">
-        <!-- Fetched dynamically -->
-      </div>
-    </div>
-
     <!-- Complaint Form Section -->
-    <div id="complaintFormSection" class="hidden">
+    <div id="complaintFormSection">
       <div class="form-header">
         <h2 id="formTitle">File a Service Complaint</h2>
         <p id="formSubtitle">We are here to help you get your appliances running again.</p>
@@ -91,7 +54,7 @@
           </div>
         </div>
 
-        <div class="form-group" style="display: none;">
+        <div class="form-group">
           <label for="phone" id="labelPhone">Phone Number</label>
           <div class="input-with-mic">
             <input type="tel" id="phone" name="phone" required placeholder="Enter your 10-digit number">
@@ -162,8 +125,6 @@
         </div>
 
         <button type="submit" class="submit-btn" id="btnSubmit">Submit Complaint</button>
-        <button type="button" class="btn-secondary" id="btnCancelComplaint"
-          style="margin-top: 1rem; width: 100%;">Cancel</button>
       </form>
 
       <div id="formMessage" class="form-message"></div>
@@ -200,8 +161,6 @@
       </div>
 
       <div class="chat-quick-replies" id="chatQuickReplies">
-        <button class="chip" data-text="File a Complaint">File a Complaint</button>
-        <button class="chip" data-text="Check Status">Check Status</button>
         <button class="chip" data-text="Shop Info">Shop Info</button>
         <button class="chip" data-text="Talk to Human">Talk to Human</button>
       </div>

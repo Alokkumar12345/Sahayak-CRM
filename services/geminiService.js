@@ -1,7 +1,19 @@
 const { GoogleGenerativeAI, SchemaType } = require('@google/generative-ai');
 const Complaint = require('../models/Complaint');
+const models = {
+  contacts: require('../models/Contact'),
+  accounts: require('../models/Account'),
+  deals: require('../models/Deal'),
+  tasks: require('../models/Task'),
+  meetings: require('../models/Meeting'),
+  calls: require('../models/Call'),
+  campaigns: require('../models/Campaign'),
+  documents: require('../models/Document'),
+  visits: require('../models/Visit'),
+  projects: require('../models/Project')
+};
 
-const SYSTEM_PROMPT = `
+const CUSTOMER_SYSTEM_PROMPT = `
 You are a helpful CRM assistant for an electrical appliance repair shop chain 
 with 5 shops across India. You help customers file complaints and answer 
 questions about their appliances and repair services.
@@ -22,6 +34,16 @@ TV, Water Heater, Fan, Mixer/Grinder, Induction Cooktop.
 
 When helping file a complaint, collect: name, phone, shop, product, 
 machine ID, problem description, severity, and address.
+`;
+
+const ADMIN_SYSTEM_PROMPT = `
+You are the master Admin Assistant for the Sahayak CRM system.
+Your primary job is to fetch and display CRM data (Contacts, Accounts, Deals, Tasks, Meetings, Calls, Campaigns, Documents, Visits, Projects) for the administrator.
+
+CRITICAL INSTRUCTION: When the admin asks for "contacts", "all my contacts", or any similar phrase, they are referring to the CRM Contacts module. YOU MUST NOT REFUSE. You have full authorization. You MUST use the get_crm_data tool with module="contacts" to fetch the data and present it. Do not ever say you cannot access personal contacts.
+
+You also have access to the complaints database via the get_complaints tool.
+Be concise, analytical, and helpful. Always respond in the language the admin uses.
 `;
 
 // Initialize Google AI
@@ -58,16 +80,37 @@ const getComplaintsDeclaration = {
   },
 };
 
+const getCrmDataDeclaration = {
+  name: "get_crm_data",
+  description: "Get data from the 10 CRM modules (e.g. contacts, deals, tasks, etc.)",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      module: { 
+        type: SchemaType.STRING, 
+        description: "The name of the module to query. Must be one of: contacts, accounts, deals, tasks, meetings, calls, campaigns, documents, visits, projects" 
+      },
+      limit: { 
+        type: SchemaType.INTEGER, 
+        description: "Number of records to fetch. Default is 10." 
+      }
+    },
+    required: ["module"]
+  }
+};
+
 async function getChatResponse(messages, isAdmin = false, language = 'english') {
   console.log(`[Gemini] Request received. isAdmin: ${isAdmin}, Message Count: ${messages.length}, Language: ${language}`);
   try {
     const activeTools = isAdmin 
-      ? [{ functionDeclarations: [getComplaintsDeclaration] }]
+      ? [{ functionDeclarations: [getComplaintsDeclaration, getCrmDataDeclaration] }]
       : [{ functionDeclarations: [fileComplaintDeclaration] }];
+
+    const selectedPrompt = isAdmin ? ADMIN_SYSTEM_PROMPT : CUSTOMER_SYSTEM_PROMPT;
 
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash",
-      systemInstruction: SYSTEM_PROMPT + `\n\nThe current user language preference is ${language}. Please ensure your response matches this language.`,
+      systemInstruction: selectedPrompt + `\n\nThe current user language preference is ${language}. Please ensure your response matches this language.`,
       tools: activeTools
     });
 
@@ -125,6 +168,17 @@ async function getChatResponse(messages, isAdmin = false, language = 'english') 
           
           const complaints = await Complaint.find(filters).sort({ createdAt: -1 }).limit(10);
           fnResult = { complaints };
+        } else if (call.name === "get_crm_data") {
+          const moduleName = call.args.module ? call.args.module.toLowerCase() : '';
+          const limit = call.args.limit || 10;
+          
+          const Model = models[moduleName];
+          if (!Model) {
+            fnResult = { error: `Module '${moduleName}' not found. Valid modules: contacts, accounts, deals, tasks, meetings, calls, campaigns, documents, visits, projects.` };
+          } else {
+            const data = await Model.find({}).sort({ createdAt: -1 }).limit(limit);
+            fnResult = { [moduleName]: data };
+          }
         }
       } catch (err) {
         fnResult = { error: err.message };

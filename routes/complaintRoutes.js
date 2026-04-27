@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', createComplaint);
 router.get('/', verifyToken, getComplaints);
-router.get('/user/:phone', getUserComplaints);
+router.get('/user/:phone', verifyToken, getUserComplaints);
 router.put('/:id', verifyToken, updateComplaint);
 
 module.exports = router;

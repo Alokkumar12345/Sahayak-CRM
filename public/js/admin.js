@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogout = document.getElementById('btnLogout');
   const complaintsTableBody = document.getElementById('complaintsTableBody');
   const adminChatWidget = document.getElementById('adminChatWidget');
-  
+  const adminSidebar = document.getElementById('adminSidebar');
+  const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+  const contentSections = document.querySelectorAll('.content-section');
+
   // Filters
   const filterShop = document.getElementById('filterShop');
   const filterStatus = document.getElementById('filterStatus');
@@ -52,7 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
       loginSection.classList.remove('hidden');
       dashboardSection.classList.add('hidden');
       btnLogout.classList.add('hidden');
+      adminSidebar.classList.add('hidden');
       adminChatWidget.classList.add('hidden');
+      
+      // Reset sidebar to dashboard
+      contentSections.forEach(sec => sec.classList.add('hidden'));
+      dashboardSection.classList.remove('hidden');
+      sidebarLinks.forEach(l => l.classList.remove('active'));
+      document.querySelector('[data-target="dashboardSection"]').classList.add('active');
     });
   }
 
@@ -63,9 +73,227 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDashboard() {
     loginSection.classList.add('hidden');
     dashboardSection.classList.remove('hidden');
+    adminSidebar.classList.remove('hidden');
     btnLogout.classList.remove('hidden');
     adminChatWidget.classList.remove('hidden');
     fetchComplaints();
+  }
+
+  // Sidebar Navigation Logic
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = e.target.getAttribute('data-target');
+      
+      // Update active class
+      sidebarLinks.forEach(l => l.classList.remove('active'));
+      e.target.classList.add('active');
+
+      // Show target section
+      contentSections.forEach(sec => sec.classList.add('hidden'));
+      const targetSection = document.getElementById(targetId);
+      targetSection.classList.remove('hidden');
+
+      // Fetch data based on section
+      if (targetSection.hasAttribute('data-module')) {
+        fetchModuleData(targetSection);
+      } else if (targetId === 'dashboardSection') {
+        fetchComplaints();
+      }
+    });
+  });
+
+  async function fetchModuleData(section) {
+    if (!currentToken) return;
+    const moduleName = section.getAttribute('data-module');
+    try {
+      const res = await fetch(`/api/crm/${moduleName}`, {
+        headers: { 'Authorization': `Bearer ${currentToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        renderModuleTable(section, data);
+      }
+    } catch (err) {
+      console.error(`Failed to fetch ${moduleName}`, err);
+    }
+  }
+
+  // --- CRM CRUD Logic ---
+  
+  // Close Modals
+  document.querySelectorAll('.btn-cancel-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.target.closest('.modal-overlay').classList.add('hidden');
+    });
+  });
+
+  // Open "Add New" Modals
+  document.querySelectorAll('.btn-add-new').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const section = e.target.closest('.content-section');
+      const moduleName = section.getAttribute('data-module');
+      const modal = document.getElementById(`${moduleName}Modal`);
+      if (modal) {
+        modal.querySelector('.modal-title').textContent = `Add ${moduleName.slice(0, -1).replace(/\b\w/g, l => l.toUpperCase())}`;
+        modal.querySelector('form').reset();
+        modal.querySelector('input[name="id"]').value = '';
+        modal.classList.remove('hidden');
+      }
+    });
+  });
+
+  // Handle Form Submissions (Create/Update)
+  document.querySelectorAll('.crm-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentToken) return;
+
+      const modal = e.target.closest('.modal-overlay');
+      const moduleName = modal.getAttribute('data-module');
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      
+      const id = data.id;
+      delete data.id;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/crm/${moduleName}/${id}` : `/api/crm/${moduleName}`;
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          modal.classList.add('hidden');
+          // Refresh the table for this module
+          const section = document.getElementById(`${moduleName}Section`);
+          fetchModuleData(section);
+        } else {
+          const err = await res.json();
+          alert(`Error saving record: ${err.message}`);
+        }
+      } catch (err) {
+        console.error('Save error', err);
+        alert('Failed to save record.');
+      }
+    });
+  });
+
+  // Global Edit Function
+  window.editRecord = (moduleName, itemString) => {
+    const item = JSON.parse(decodeURIComponent(itemString));
+    const modal = document.getElementById(`${moduleName}Modal`);
+    if (modal) {
+      modal.querySelector('.modal-title').textContent = `Edit ${moduleName.slice(0, -1).replace(/\b\w/g, l => l.toUpperCase())}`;
+      const form = modal.querySelector('form');
+      
+      // Populate fields
+      Object.keys(item).forEach(key => {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) {
+          if (input.type === 'date' || input.type === 'datetime-local') {
+            if (item[key]) {
+               const date = new Date(item[key]);
+               if (input.type === 'date') {
+                 input.value = date.toISOString().split('T')[0];
+               } else {
+                 input.value = date.toISOString().slice(0,16);
+               }
+            }
+          } else {
+            input.value = item[key];
+          }
+        }
+      });
+      
+      form.querySelector('input[name="id"]').value = item._id;
+      modal.classList.remove('hidden');
+    }
+  };
+
+  // Global Delete Function
+  window.deleteRecord = async (moduleName, id) => {
+    if (!currentToken) return;
+    if (!confirm('Are you sure you want to delete this record?')) return;
+
+    try {
+      const res = await fetch(`/api/crm/${moduleName}/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${currentToken}` }
+      });
+      if (res.ok) {
+        const section = document.getElementById(`${moduleName}Section`);
+        fetchModuleData(section);
+      } else {
+        alert('Failed to delete record.');
+      }
+    } catch (err) {
+      console.error('Delete error', err);
+      alert('Error deleting record.');
+    }
+  };
+
+  function renderModuleTable(section, data) {
+     const table = section.querySelector('table');
+     const thead = table.querySelector('thead tr');
+     if (!thead.querySelector('.action-col')) {
+       const th = document.createElement('th');
+       th.className = 'action-col';
+       th.innerText = 'Actions';
+       thead.appendChild(th);
+     }
+
+     const tbody = section.querySelector('tbody');
+     tbody.innerHTML = '';
+     if (data.length === 0) {
+       tbody.innerHTML = `<tr><td colspan="${thead.children.length}" style="text-align:center;">No records found.</td></tr>`;
+       return;
+     }
+     
+     const moduleName = section.getAttribute('data-module');
+     data.forEach(item => {
+       const tr = document.createElement('tr');
+       let html = '';
+       if (moduleName === 'contacts') {
+         html = `<td>${item.name}</td><td>${item.email || '-'}</td><td>${item.phone}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'accounts') {
+         html = `<td>${item.name}</td><td>${item.industry || '-'}</td><td>${item.website || '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'deals') {
+         html = `<td>${item.title}</td><td>${item.value}</td><td>${item.stage}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'tasks') {
+         html = `<td>${item.title}</td><td>${item.status}</td><td>${item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'meetings') {
+         html = `<td>${item.title}</td><td>${new Date(item.date).toLocaleDateString()}</td><td>${item.location || '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'calls') {
+          html = `<td>${item.caller}</td><td>${item.receiver}</td><td>${item.duration || '-'}</td><td>${new Date(item.date).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'campaigns') {
+          html = `<td>${item.name}</td><td>${item.status}</td><td>${item.budget || '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'documents') {
+          html = `<td>${item.title}</td><td><a href="${item.url}" target="_blank">Link</a></td><td>${new Date(item.uploadedAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'visits') {
+          html = `<td>${item.location}</td><td>${new Date(item.date).toLocaleDateString()}</td><td>${item.purpose || '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       } else if (moduleName === 'projects') {
+          html = `<td>${item.name}</td><td>${item.status}</td><td>${item.deadline ? new Date(item.deadline).toLocaleDateString() : '-'}</td><td>${new Date(item.createdAt).toLocaleDateString()}</td>`;
+       }
+
+       // Escape quotes in JSON string to avoid breaking HTML attributes
+       const itemStr = encodeURIComponent(JSON.stringify(item));
+       html += `
+         <td>
+           <button class="btn-small" onclick="window.editRecord('${moduleName}', '${itemStr}')" style="margin-right: 5px;">Edit</button>
+           <button class="btn-small" onclick="window.deleteRecord('${moduleName}', '${item._id}')" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #fca5a5;">Del</button>
+         </td>
+       `;
+       tr.innerHTML = html;
+       tbody.appendChild(tr);
+     });
   }
 
   async function fetchComplaints() {

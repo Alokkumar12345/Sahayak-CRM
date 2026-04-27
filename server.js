@@ -9,6 +9,7 @@ const path = require('path');
 const complaintRoutes = require('./routes/complaintRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes');
+const crmRoutes = require('./routes/crmRoutes');
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/crm', crmRoutes);
 
 // --- VIEW (MVC) ---
 // HTML views are served from the dedicated 'views' directory.
