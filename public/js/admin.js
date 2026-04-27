@@ -58,9 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
       adminSidebar.classList.add('hidden');
       adminChatWidget.classList.add('hidden');
       
-      // Reset sidebar to dashboard
+      // Reset sidebar to dashboard internally, but keep it hidden
       contentSections.forEach(sec => sec.classList.add('hidden'));
-      dashboardSection.classList.remove('hidden');
       sidebarLinks.forEach(l => l.classList.remove('active'));
       document.querySelector('[data-target="dashboardSection"]').classList.add('active');
     });
